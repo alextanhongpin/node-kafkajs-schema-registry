@@ -11,7 +11,7 @@ const run = async () => {
   await producer.connect();
 
   // Payload must adhere to AVRO schema.
-  const payload = { fullName: "John Doe" };
+  const payload = { fullName: "John Doe", age: 13 };
   await producer.send({
     topic: TOPIC,
     messages: [
@@ -29,7 +29,7 @@ const run = async () => {
 
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
-      const decodedKey = message.key;
+      const decodedKey = message.key.toString();
       const decodedValue = await registry.decode(message.value);
       console.log({ topic, partition, message });
       console.log({ decodedKey, decodedValue });

@@ -4,3 +4,7 @@ up:
 
 down:
 	@docker-compose down
+
+
+schema:
+	@curl localhost:8081/schemas | jq
