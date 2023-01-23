@@ -42,7 +42,7 @@ message Person {
   }
 }
 
-const schema = createSchema(3);
+const schema = createSchema(1);
 
 const { id } = await registry.register(
   {

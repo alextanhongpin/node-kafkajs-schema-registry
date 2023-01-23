@@ -1,0 +1,9 @@
+{
+    "type": "record",
+    "name": "RandomTest",
+    "namespace": "com.example",
+    "fields": [
+      {"type": "string", "name": "fullName", "default": ""},
+      {"type": "int", "name": "age", "default": -1}
+    ]
+}

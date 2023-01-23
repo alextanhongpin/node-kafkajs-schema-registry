@@ -1,5 +1,11 @@
 import { SchemaRegistry, SchemaType } from "@kafkajs/confluent-schema-registry";
-const registry = new SchemaRegistry({ host: "http://localhost:8081" });
+// To connect to Confluent Schema Registry
+//const registry = new SchemaRegistry({ host: "http://localhost:8081" });
+
+// To connect to Apicurio Schema Registry
+const registry = new SchemaRegistry({
+  host: "http://localhost:8080/apis/ccompat/v7",
+});
 
 // This is idempotent, no matter how many times we re-run this, it will only
 // register once.
@@ -48,7 +54,7 @@ function createSchema(version = 1) {
   }
 }
 
-const schema = createSchema(3);
+const schema = createSchema(1);
 
 const { id } = await registry.register(
   {
