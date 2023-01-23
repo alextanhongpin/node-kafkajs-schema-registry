@@ -1,5 +1,5 @@
 import { Kafka } from "kafkajs";
-import { registry, id, schema } from "./schema.js";
+import { registry, id, schema } from "./avro.js";
 
 const kafka = new Kafka({ clientId: "my-app", brokers: ["localhost:9093"] });
 const consumer = kafka.consumer({ groupId: "test-group" });
