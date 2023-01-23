@@ -67,6 +67,14 @@ $ localhost:8080/apis/ccompat/v7
 $ curl localhost:8080/apis/ccompat/v7/subjects
 ```
 
+Proto compatiblity issue:
+
+```
+https://github.com/Apicurio/apicurio-registry/issues/1334
+```
+
+Example for `schemas/proto/person_v3.proto` works for Confluent Schema Registry, but is marked as not backward compatible by Apicurio.
+
 ## References
 
 - https://www.confluent.io/blog/schema-registry-for-beginners/

@@ -9,8 +9,6 @@ async function main() {
 
   const registry = createRegistry(provider);
   const schema = loadSchema(data);
-  console.log("loaded");
-  console.log(schema);
 
   const { id } = await registry.register(
     {
@@ -29,7 +27,14 @@ async function main() {
   const payload = { fullName: "John Doe", age: 10 };
   const encodedPayload = await registry.encode(id, payload);
   const decodedPayload = await registry.decode(encodedPayload);
-  console.log({ encodedPayload, decodedPayload });
+  console.log({
+    id,
+    provider,
+    type,
+    schema,
+    encodedPayload: encodedPayload.toString("base64"),
+    decodedPayload,
+  });
 }
 
 main().catch(console.error);

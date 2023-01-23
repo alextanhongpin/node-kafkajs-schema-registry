@@ -60,7 +60,7 @@ function createSchema(version = 1) {
 }
 
 const schema = createSchema(3);
-const subject = "T.json";
+const subject = "Person.json";
 
 const { id } = await registry.register(
   {

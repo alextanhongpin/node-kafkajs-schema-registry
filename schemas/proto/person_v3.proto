@@ -2,5 +2,7 @@ syntax = "proto3";
 package auth;
 
 message Person {
+  reserved 1;
+  reserved "full_name";
   int32 age = 2;
 }
