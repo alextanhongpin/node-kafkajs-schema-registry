@@ -75,6 +75,16 @@ https://github.com/Apicurio/apicurio-registry/issues/1334
 
 Example for `schemas/proto/person_v3.proto` works for Confluent Schema Registry, but is marked as not backward compatible by Apicurio.
 
+
+## Schema Management
+
+Since many producers/consumers may make use of the schema, the schemas should probably be stored in a centralized repo. 
+
+The repo can then provide clients/package to export the subjects of the schema for ease of use.
+
+The migration of the schemas should be done externally before the schema can be used by consumers/producers. The application should not perform the registration, otherwise there may be attempts from different applications registering different schemas at the same time.
+
+
 ## References
 
 - https://www.confluent.io/blog/schema-registry-for-beginners/
