@@ -1,14 +1,9 @@
-import fs from "fs";
+import fsp from "node:fs/promises";
 import { SchemaRegistry, SchemaType } from "@kafkajs/confluent-schema-registry";
 
-async function main() {
-  const { provider, data, type, subject } = parseArgs();
-  console.log(
-    `Using ${provider} Schema Registry for serializing/deserializing ${type}`
-  );
-
-  const registry = createRegistry(provider);
-  const schema = loadSchema(data);
+export async function run({ registry, provider, data, type, subject }) {
+  //const registry = createRegistry(provider);
+  const schema = await loadSchema(data);
 
   const { id } = await registry.register(
     {
@@ -37,43 +32,47 @@ async function main() {
   });
 }
 
-main().catch(console.error);
+if (process.argv.slice(2)) {
+  const { provider, data, type, subject } = parseArgs();
+  const registry = createRegistry(provider);
+  run({ registry, provider, data, type, subject }).catch(console.error);
+}
 
-function createRegistry(provider) {
+export function createRegistry(provider) {
   return new SchemaRegistry({ host: getHost(provider) });
 }
 
-function loadSchema(path) {
-  const content = fs.readFileSync(path, "utf-8");
+export async function loadSchema(path) {
+  const content = await fsp.readFile(path, "utf-8");
   return content;
 }
 
 function getType(type) {
-  switch (type) {
-    case "avro":
-      return SchemaType.AVRO;
-    case "proto":
-      return SchemaType.PROTOBUF;
-    case "json":
-      return SchemaType.JSON;
-    default:
-      throw new Error(
-        `unknown type: ${type}. Only ${allowedFlags.type.join(
-          ", "
-        )} is supported`
-      );
+  const types = {
+    avro: SchemaType.AVRO,
+    proto: SchemaType.PROTOBUF,
+    json: SchemaType.JSON,
+  };
+
+  if (!(type in types)) {
+    throw new Error(
+      `unknown type: ${type}. Only ${allowedFlags.type.join(", ")} is supported`
+    );
   }
+
+  return types[type];
 }
 
 function getHost(provider) {
-  switch (provider) {
-    case "apicurio":
-      return "http://localhost:8080/apis/ccompat/v7";
-    case "confluent":
-      return "http://localhost:8081";
-    default:
-      throw new Error(`unknown provider: ${provider}`);
+  const providers = {
+    apicurio: "http://localhost:8080/apis/ccompat/v7",
+    confluent: "http://localhost:8081",
+  };
+  if (!provider in providers) {
+    throw new Error(`unknown provider: ${provider}`);
   }
+
+  return providers[provider];
 }
 
 function parseArgs() {

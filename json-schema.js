@@ -1,4 +1,5 @@
 import { SchemaType, SchemaRegistry } from "@kafkajs/confluent-schema-registry";
+import { loadSchema } from "./schemas";
 
 const registry = new SchemaRegistry({ host: "http://localhost:8081" });
 
@@ -8,58 +9,23 @@ const registry = new SchemaRegistry({ host: "http://localhost:8081" });
 // 3. There is no need to specify  "additionalProperties": true
 // 4. JSON Schema compatibility rules here: https://github.com/confluentinc/schema-registry/issues/2121
 
-function createSchema(version = 1) {
+async function createSchema(version = 1) {
   // NOTE: Additional properties must be set to false to be able to add optional fields later.
-  const schema1 = `{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.com/person.schema.json",
-  "title": "Person",
-  "description": "A Person",
-  "properties": {
-    "fullName": { "type": "string", "description": "The full name of the person" }
-  },
-  "type": "object",
-  "additionalProperties": false
-}`;
-
-  // Add age
-  const schema2 = `{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.com/person.schema.json",
-  "title": "Person",
-  "description": "A Person",
-  "properties": {
-    "fullName": { "type": "string", "description": "The full name of the person" },
-    "age": { "type": "integer", "description": "The age of the person" }
-  },
-  "type": "object"
-}`;
-
-  // Remove fullName
-  const schema3 = `{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.com/person.schema.json",
-  "title": "Person",
-  "description": "A Person",
-  "properties": {
-    "age": { "type": "integer", "description": "The age of the person" }
-  },
-  "type": "object"
-}`;
-
-  switch (version) {
-    case 1:
-      return schema1;
-    case 2:
-      return schema2;
-    case 3:
-      return schema3;
-    default:
-      throw new Error("unknown schema version");
+  const schemas = {
+    1: await loadSchema("./schemas/json/person_v1.json"),
+    // Add field age.
+    2: await loadSchema("./schemas/json/person_v2.json"),
+    // Remove field fullName.
+    3: await loadSchema("./schemas/json/person_v3.json"),
+  };
+  if (!(version in schemas)) {
+    throw new Error("unknown schema version");
   }
+
+  return schemas[version];
 }
 
-const schema = createSchema(3);
+const schema = await createSchema(3);
 const subject = "Person.json";
 
 const { id } = await registry.register(

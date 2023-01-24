@@ -1,4 +1,5 @@
 import { SchemaRegistry, SchemaType } from "@kafkajs/confluent-schema-registry";
+import { loadSchema } from "./schemas";
 // To connect to Confluent Schema Registry
 //const registry = new SchemaRegistry({ host: "http://localhost:8081" });
 
@@ -9,52 +10,25 @@ const registry = new SchemaRegistry({
 
 // This is idempotent, no matter how many times we re-run this, it will only
 // register once.
-function createSchema(version = 1) {
+async function createSchema(version = 1) {
   // It is important to set the default, so that the fields can be added or
   // removed without breaking compatibility.
-  const schema1 = `{
-    "type": "record",
-    "name": "RandomTest",
-    "namespace": "com.example",
-    "fields": [
-      {"type": "string", "name": "fullName", "default": ""}
-    ]
-  }`;
-
-  // Add new field age.
-  const schema2 = `{
-    "type": "record",
-    "name": "RandomTest",
-    "namespace": "com.example",
-    "fields": [
-      {"type": "string", "name": "fullName", "default": ""},
-      {"type": "int", "name": "age", "default": -1}
-    ]
-  }`;
-
-  // Deletes the field fullName
-  const schema3 = `{
-    "type": "record",
-    "name": "RandomTest",
-    "namespace": "com.example",
-    "fields": [
-      {"type": "int", "name": "age", "default": -1}
-    ]
-  }`;
-
-  switch (version) {
-    case 1:
-      return schema1;
-    case 2:
-      return schema2;
-    case 3:
-      return schema3;
-    default:
-      throw new Error("unknown schema version");
+  const schemas = {
+    1: await loadSchema("./schemas/avro/person_v1.avsc"),
+    // Add new field age.
+    2: await loadSchema("./schemas/avro/person_v2.avsc"),
+    // Delete field fullName
+    3: await loadSchema("./schemas/avro/person_v3.avsc"),
+  };
+  if (!(version in schemas)) {
+    throw new Error("unknown schema version");
   }
+
+  return schemas[version];
 }
 
-const schema = createSchema(1);
+const schema = await createSchema(1);
+const subject = "com.example.RandomTest";
 
 const { id } = await registry.register(
   {
@@ -75,7 +49,7 @@ const decodedPayload = await registry.decode(encodedPayload);
 console.log({ encodedPayload, decodedPayload });
 
 console.log((await registry.getSchema(id)).name);
-const latestId = await registry.getLatestSchemaId("com.example.RandomTest");
+const latestId = await registry.getLatestSchemaId(subject);
 console.log({ latestId });
 
 export { registry, schema, id };
